@@ -14,6 +14,18 @@ app = FastAPI(
     version="1.0.0"
 )
 
+import os
+
+if os.getenv("AIOPS_API_URL") and os.getenv("AIOPS_API_KEY"):
+    from aiops_sdk import install
+
+    install(
+        app,
+        api_url=os.environ["AIOPS_API_URL"],
+        api_key=os.environ["AIOPS_API_KEY"],
+        service_name="task-manager",
+    )
+
 
 @app.get("/", tags=["Root"])
 def read_root() -> dict:
@@ -65,13 +77,7 @@ def read_task(
 ) -> models.Task:
     """Get a specific task by ID"""
     db_task = crud.get_task(db=db, task_id=task_id)
-    
-    if db_task is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Task with id {task_id} not found"
-        )
-    
+    db_task.title = db_task.title.strip()
     return db_task
 
 
