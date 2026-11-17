@@ -77,6 +77,12 @@ def read_task(
 ) -> models.Task:
     """Get a specific task by ID"""
     db_task = crud.get_task(db=db, task_id=task_id)
+    if db_task is None:
+        from fastapi import HTTPException, status
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
     db_task.title = db_task.title.strip()
     return db_task
 
