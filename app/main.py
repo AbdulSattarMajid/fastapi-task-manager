@@ -76,7 +76,14 @@ def read_task(
     db: Session = Depends(get_db)
 ) -> models.Task:
     """Get a specific task by ID"""
+    # Import HTTPException locally to avoid circular imports
+    from fastapi import HTTPException, status
+
     db_task = crud.get_task(db=db, task_id=task_id)
+    if db_task is None:
+        # Task not found – return a 404 response
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    # Safely strip whitespace from the title
     db_task.title = db_task.title.strip()
     return db_task
 
